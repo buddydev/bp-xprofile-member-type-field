@@ -2,6 +2,7 @@
 
 /**
  * Plugin Name: BP Xprofile Member Type Field
+ * Plugin URI: http://buddydev.com/plugins/bp-xprofile-member-type-field/
  * Version: 1.0.0
  * Author: BuddyDev.Com
  * Author URI: http://buddydev.com
