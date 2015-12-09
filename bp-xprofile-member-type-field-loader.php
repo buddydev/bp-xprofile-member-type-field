@@ -3,7 +3,7 @@
 /**
  * Plugin Name: BP Xprofile Member Type Field
  * Plugin URI: http://buddydev.com/plugins/bp-xprofile-member-type-field/
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: BuddyDev.Com
  * Author URI: http://buddydev.com
  * Description: Allow site admins to use member type as xprofile field. It will update the member type of the user when they update their profile field
