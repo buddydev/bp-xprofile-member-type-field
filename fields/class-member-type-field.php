@@ -121,7 +121,7 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type_Selectbox
 	 * @param string $field_value The member type name(key) value, as saved in the database.
 	 * @return string the member type label
 	 */
-	public static function display_filter( $field_value ) {
+	public static function display_filter( $field_value, $field_id = '' ) {
 		
 		if( empty( $field_value ) ) {
 			return $field_value;

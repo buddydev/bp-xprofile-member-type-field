@@ -69,6 +69,7 @@ class BD_Xprofile_Member_Type_Field_Helper {
         
         $files = array(
 			'fields/class-member-type-field.php',
+			'bp-profile-search-helper.php',
         );
         
         foreach( $files as $file ) {
