@@ -31,7 +31,7 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type_Selectbox
 	public function is_valid( $val ) {
 		
 		//if a registered member type,
-		if( empty( $val) || bp_get_member_type_object( $val ) ) {
+		if ( empty( $val) || bp_get_member_type_object( $val ) ) {
 			return true;
 		}
 		
@@ -64,12 +64,12 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type_Selectbox
 		
 		$original_option_values = maybe_unserialize( BP_XProfile_ProfileData::get_value_byid( $this->field_obj->id, $args['user_id'] ) );
 
-		if( ! empty( $_POST['field_' . $this->field_obj->id] ) ) {
+		if ( ! empty( $_POST['field_' . $this->field_obj->id] ) ) {
 			
 			$option_values =  (array) $_POST['field_' . $this->field_obj->id] ;
 			$option_values = array_map( 'sanitize_text_field', $option_values );
 			
-		}else {
+		} else {
 			
 			$option_values = (array)$original_option_values;
 			
@@ -80,7 +80,7 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type_Selectbox
 		$selected = '';
 		//$option_values = (array) $original_option_values;	
 		
-		if( empty( $option_values ) || in_array( 'none', $option_values ) ) {
+		if ( empty( $option_values ) || in_array( 'none', $option_values ) ) {
 			$selected = ' selected="selected"';
 		}
 		
@@ -123,13 +123,13 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type_Selectbox
 	 */
 	public static function display_filter( $field_value, $field_id = '' ) {
 		
-		if( empty( $field_value ) ) {
+		if ( empty( $field_value ) ) {
 			return $field_value;
 		}
 		
 		$member_types = self::get_member_types();
 		
-		if( isset( $member_types[ $field_value ] ) ){
+		if ( isset( $member_types[ $field_value ] ) ) {
 			return $member_types[ $field_value ];
 		}
 		
@@ -147,18 +147,18 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type_Selectbox
 		
 		static $member_types = null;
 		
-		if( isset( $member_types ) ){
+		if ( isset( $member_types ) ) {
 			return $member_types;
 		}
 		
 		$registered_member_types = bp_get_member_types( null, 'object' );
 		
-		if( empty( $registered_member_types ) ){
+		if ( empty( $registered_member_types ) ) {
 			$member_types = $registered_member_types;
 			return $member_types;
 		}
 		
-		foreach( $registered_member_types as $type_name => $member_type_object ) {
+		foreach ( $registered_member_types as $type_name => $member_type_object ) {
 			$member_types[$type_name] = $member_type_object->labels['singular_name'];
 		}
 		
