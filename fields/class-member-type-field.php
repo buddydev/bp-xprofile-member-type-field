@@ -3,7 +3,7 @@
  * Implementing member type as select field
  * 
  */
-class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type_Selectbox {
+class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 	
 
 	public function __construct() {
@@ -38,10 +38,10 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type_Selectbox
 		return false;
 		
 	}
-	
+
 	public function edit_field_html( array $raw_properties = array() ) {
 		
-		parent::edit_field_html( $raw_properties );
+		$this->_edit_field_html( $raw_properties );
 		
 		bp_xprofile_member_type_field_helper()->set_shown( bp_get_the_profile_field_id() );
 	}
@@ -77,31 +77,15 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type_Selectbox
 		 //member types list as array
                 
 		$options = self::get_member_types();
-		$selected = '';
+
 		//$option_values = (array) $original_option_values;	
-		
-		if ( empty( $option_values ) || in_array( 'none', $option_values ) ) {
-			$selected = ' selected="selected"';
+
+		if ( $this->display_as_radio() ) {
+			$this->_edit_options_html_radio( $option_values, $options );
+		} else {
+			$this->_edit_options_html( $option_values, $options );
 		}
-		
-		$html     = '<option value="" ' .$selected .' >----' . /* translators: no option picked in select box */  '</option>';
-		
-		echo $html;
-	
-		foreach (  $options  as $member_type => $label ) {
 
-			$selected = '';
-			// Run the allowed option name through the before_save filter, so we'll be sure to get a match
-			$allowed_options = xprofile_sanitize_data_value_before_save( $member_type, false, false );
-
-			// First, check to see whether the user-entered value matches
-			if ( in_array( $allowed_options, (array) $option_values ) ) {
-					$selected = ' selected="selected"';
-			}
-
-			echo  apply_filters( 'bp_get_the_profile_field_options_member_type', '<option' . $selected . ' value="' . esc_attr( stripslashes( $member_type ) ) . '">' . $label . '</option>', $member_type, $this->field_obj->id, $selected );
-
-		}
 				
 	}
 
@@ -163,5 +147,141 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type_Selectbox
 		}
 		
 		return $member_types;
+	}
+
+	/**
+	 * Show as radio or not?
+	 * @return boolean
+	 */
+	public function display_as_radio() {
+		return apply_filters( 'bd_xprofile_field_type_membertype_as_radio', false, $this );
+	}
+	//Helpers
+
+	/**
+	 * Display as select box
+	 * @param array $raw_properties
+	 */
+	public function _edit_field_html( array $raw_properties = array() ) {
+
+		// User_id is a special optional parameter that we pass to
+		// {@link bp_the_profile_field_options()}.
+		if ( isset( $raw_properties['user_id'] ) ) {
+			$user_id = (int) $raw_properties['user_id'];
+			unset( $raw_properties['user_id'] );
+		} else {
+			$user_id = bp_displayed_user_id();
+		}
+
+		if ( $this->display_as_radio() ) {
+			$this->_element_html_radio( $raw_properties, $user_id );
+		} else {
+			$this->_element_html( $raw_properties, $user_id );
+		}
+
+
+	}
+
+	protected function _element_html($raw_properties = array() , $user_id = null) {
+		?>
+		<label for="<?php bp_the_profile_field_input_name(); ?>">
+			<?php bp_the_profile_field_name(); ?>
+			<?php bp_the_profile_field_required_label(); ?>
+		</label>
+
+		<?php
+
+		/** This action is documented in bp-xprofile/bp-xprofile-classes */
+		do_action( bp_get_the_profile_field_errors_action() );?>
+
+		<select <?php echo $this->get_edit_field_html_elements( $raw_properties ); ?>>
+			<?php bp_the_profile_field_options( array( 'user_id' => $user_id ) ); ?>
+		</select>
+		<?php
+	}
+	protected function _element_html_radio($raw_properties = array() , $user_id = null) {
+		?>
+
+		<div class="radio">
+
+			<label for="<?php bp_the_profile_field_input_name(); ?>">
+				<?php bp_the_profile_field_name(); ?>
+				<?php bp_the_profile_field_required_label(); ?>
+			</label>
+
+			<?php
+
+			/** This action is documented in bp-xprofile/bp-xprofile-classes */
+			do_action( bp_get_the_profile_field_errors_action() ); ?>
+
+			<?php bp_the_profile_field_options( array( 'user_id' => $user_id ) );
+
+			if ( ! bp_get_the_profile_field_is_required() ) : ?>
+
+				<a class="clear-value" href="javascript:clear( '<?php echo esc_js( bp_get_the_profile_field_input_name() ); ?>' );">
+					<?php esc_html_e( 'Clear', 'buddypress' ); ?>
+				</a>
+
+			<?php endif; ?>
+
+		</div>
+		<?php
+	}
+	/**
+	 * @param $option_values
+	 * @param $options
+	 */
+	protected function _edit_options_html( $option_values, $options ) {
+		$selected = '';
+		if ( empty( $option_values ) || in_array( 'none', $option_values ) ) {
+			$selected = ' selected="selected"';
+		}
+
+		$html = '<option value="" ' . $selected . ' >----' . /* translators: no option picked in select box */
+		        '</option>';
+
+		echo $html;
+
+		foreach ( $options as $member_type => $label ) {
+
+			$selected = '';
+			// Run the allowed option name through the before_save filter, so we'll be sure to get a match
+			$allowed_options = xprofile_sanitize_data_value_before_save( $member_type, false, false );
+
+			// First, check to see whether the user-entered value matches
+			if ( in_array( $allowed_options, (array) $option_values ) ) {
+				$selected = ' selected="selected"';
+			}
+
+			echo apply_filters( 'bp_get_the_profile_field_options_member_type', '<option' . $selected . ' value="' . esc_attr( stripslashes( $member_type ) ) . '">' . $label . '</option>', $member_type, $this->field_obj->id, $selected );
+
+		}
+	}
+	protected function _edit_options_html_radio( $option_values, $options ) {
+
+
+		foreach ( $options as $member_type => $label ) {
+
+			$selected = '';
+			// Run the allowed option name through the before_save filter, so we'll be sure to get a match
+			$allowed_options = xprofile_sanitize_data_value_before_save( $member_type, false, false );
+			// First, check to see whether the user-entered value matches
+			if ( in_array( $allowed_options, (array) $option_values ) ) {
+				$selected = ' checked="checked"';
+			}
+
+			$new_html = sprintf( '<label for="%3$s"><input %1$s type="radio" name="%2$s" id="%3$s" value="%4$s">%5$s</label>',
+				$selected,
+				esc_attr( "field_{$this->field_obj->id}" ),
+				esc_attr( "option_{$member_type}" ),
+				esc_attr( stripslashes( $member_type ) ),
+				esc_html( stripslashes( $label ) )
+			);
+
+
+			echo apply_filters( 'bp_get_the_profile_field_options_member_type', $new_html, $member_type, $this->field_obj->id, $selected );
+
+		}
+
 	}
 }
