@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Plugin Name: BP Xprofile Member Type Field
+ * Plugin Name: BuddyPress Xprofile Member Type Field
  * Plugin URI: http://buddydev.com/plugins/bp-xprofile-member-type-field/
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: BuddyDev.Com
  * Author URI: http://buddydev.com
  * Description: Allow site admins to use member type as xprofile field. It will update the member type of the user when they update their profile field
@@ -48,7 +48,11 @@ class BD_Xprofile_Member_Type_Field_Helper {
 		//update member type when field is updated
 		
 		add_action( 'xprofile_data_after_save', array( $this, 'update_member_type' ) );
-        
+	    //sync field on member type update
+		add_action( 'bp_set_member_type', array( $this, 'update_field_data' ), 10, 3 );
+		//remove membertype dropdown from Admin->Users->Edit Profile->Sidebar
+		add_action( 'bp_members_admin_user_metaboxes', array( $this, 'remove_membertype_metabox' ) );
+
     }
     
     /**
@@ -57,7 +61,7 @@ class BD_Xprofile_Member_Type_Field_Helper {
      */
     public static function get_instance() {
         
-        if( ! isset( self::$instance ) ) {
+        if ( ! isset( self::$instance ) ) {
             self::$instance = new self();
 		}	
         
@@ -72,7 +76,7 @@ class BD_Xprofile_Member_Type_Field_Helper {
 			'bp-profile-search-helper.php',
         );
         
-        foreach( $files as $file ) {
+        foreach ( $files as $file ) {
             require_once $this->path . $file;
 		}
         
@@ -115,7 +119,7 @@ class BD_Xprofile_Member_Type_Field_Helper {
 		
 		$field_id = bp_get_the_profile_field_id();
 		
-		if( ! $this->was_shown( $field_id ) && in_array( bp_get_the_profile_field_type(), $this->field_types ) ) {
+		if ( ! $this->was_shown( $field_id ) && in_array( bp_get_the_profile_field_type(), $this->field_types ) ) {
 			
 			$field_type = bp_xprofile_create_field_type( bp_get_the_profile_field_type() );
 			$field_type->edit_field_html();
@@ -132,19 +136,19 @@ class BD_Xprofile_Member_Type_Field_Helper {
 	 */
 	public function update_member_type( $data_field ) {
 	
-		$field = xprofile_get_field( $data_field->field_id);
+		$field = xprofile_get_field( $data_field->field_id ) ;
 
 		//we only need to worry about member type field
 
-		if( $field->type !='membertype' )
+		if ( $field->type != 'membertype' ) {
 			return ;
-	
-		
+		}
+
 		$user_id = $data_field->user_id;
 		$member_type = maybe_unserialize( $data_field->value );
 		
 		//validate too?
-		if( empty( $member_type ) ) {
+		if ( empty( $member_type ) ) {
 			
 			//remove all member type?
 			bp_set_member_type( $user_id, '' );
@@ -152,6 +156,48 @@ class BD_Xprofile_Member_Type_Field_Helper {
 		}
 		//should we validate member type here? I don't think as only validated data will be passed here
 		bp_set_member_type( $user_id, $member_type );
+	}
+
+	public function update_field_data(  $user_id, $member_type, $append ) {
+		global $wpdb;
+
+		$fields = $this->get_membertype_fields();
+
+		if ( empty( $fields ) ) {
+			return ;
+		}
+
+		$list = '('.join( ',', $fields ) .')';
+
+		$table = buddypress()->profile->table_name_data;
+
+		$query = $wpdb->prepare( "SELECT field_id, value FROM {$table} WHERE field_id IN {$list} AND user_id = %d", $user_id );
+
+		$data_fields = $wpdb->get_results( $query );
+
+		foreach ( $data_fields as $row ) {
+			if ( $row->value == $member_type ) {
+				continue;
+				//no need to update
+			}
+			//if we are here, sync it
+			xprofile_set_field_data( $row->field_id, $user_id, $member_type );
+		}
+
+	}
+
+	public function get_membertype_fields() {
+		global $wpdb;
+		$table =  buddypress()->profile->table_name_fields;
+
+		$query = "SELECT id FROM {$table} WHERE type = %s";
+		$fields_ids = $wpdb->get_col( $wpdb->prepare( $query, 'membertype' ) );
+
+		return $fields_ids;
+	}
+	
+	public function remove_membertype_metabox() {
+		remove_meta_box( 'bp_members_admin_member_type', get_current_screen()->id,  'side' );
 	}
 
 }
