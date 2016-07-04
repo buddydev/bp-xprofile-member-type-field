@@ -3,7 +3,7 @@
 /**
  * Plugin Name: BuddyPress Xprofile Member Type Field
  * Plugin URI: http://buddydev.com/plugins/bp-xprofile-member-type-field/
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: BuddyDev.Com
  * Author URI: http://buddydev.com
  * Description: Allow site admins to use member type as xprofile field. It will update the member type of the user when they update their profile field
@@ -160,6 +160,11 @@ class BD_Xprofile_Member_Type_Field_Helper {
 
 	public function update_field_data(  $user_id, $member_type, $append ) {
 		global $wpdb;
+		//if the account is being deleted, there is no need to syc the fields
+		//it will also help us break the cyclic dependency(infinite loop)
+		if ( did_action( 'delete_user') || did_action( 'wpmu_delete_user' ) ) {
+			return ;
+		}
 
 		$fields = $this->get_membertype_fields();
 
