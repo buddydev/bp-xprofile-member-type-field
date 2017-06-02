@@ -2,10 +2,10 @@
 
 /**
  * Plugin Name: BuddyPress Xprofile Member Type Field
- * Plugin URI: http://buddydev.com/plugins/bp-xprofile-member-type-field/
- * Version: 1.0.4
+ * Plugin URI: https://buddydev.com/plugins/bp-xprofile-member-type-field/
+ * Version: 1.0.5
  * Author: BuddyDev.Com
- * Author URI: http://buddydev.com
+ * Author URI: https://buddydev.com
  * Description: Allow site admins to use member type as xprofile field. It will update the member type of the user when they update their profile field
  */
 
@@ -69,8 +69,7 @@ class BD_Xprofile_Member_Type_Field_Helper {
     }
     
     public function load() {
-        
-        
+
         $files = array(
 			'fields/class-member-type-field.php',
 			'bp-profile-search-helper.php',
@@ -84,17 +83,16 @@ class BD_Xprofile_Member_Type_Field_Helper {
     
 	public function add_field_types( $filed_types ) {
 		
-		//you may be wondering why I am using array instead of $filed_types['membertype'] = 'class name'. Just for future updates to add more field types
+		// you may be wondering why I am using array instead of $filed_types['membertype'] = 'class name'. Just for future updates to add more field types
 		$our_field_types = array(
-			
 			'membertype'	=> 'BD_XProfile_Field_Type_MemberType',
-			
 			);
-		//store our list in the $this->field_types array
+		// store our list in the $this->field_types array.
 		$this->field_types = array_keys( $our_field_types );
 		
 		return array_merge( $filed_types, $our_field_types );
 	}
+
 	/**
 	 * Mark the field as shown
 	 * 
@@ -107,14 +105,14 @@ class BD_Xprofile_Member_Type_Field_Helper {
 	/**
 	 * Check if the given field was shown
 	 * 
-	 * @param type $field_id
-	 * @return type
+	 * @param int $field_id
+	 * @return boolean
 	 */
 	public function was_shown( $field_id ) {
 		
 		return isset( $this->shown_fields['field_' . $field_id ] );
 	}
-	//a work around for the themes that does not support newer hook
+	// a work around for the themes that does not support newer hook.
 	public function may_be_show_field( ) {
 		
 		$field_id = bp_get_the_profile_field_id();
@@ -158,6 +156,13 @@ class BD_Xprofile_Member_Type_Field_Helper {
 		bp_set_member_type( $user_id, $member_type );
 	}
 
+	/**
+	 * Update field data when the member type is updated.
+	 *
+	 * @param $user_id
+	 * @param $member_type
+	 * @param $append
+	 */
 	public function update_field_data(  $user_id, $member_type, $append ) {
 		global $wpdb;
 		//if the account is being deleted, there is no need to syc the fields
@@ -166,11 +171,13 @@ class BD_Xprofile_Member_Type_Field_Helper {
 			return ;
 		}
 
+
 		$fields = $this->get_membertype_fields();
 
 		if ( empty( $fields ) ) {
 			return ;
 		}
+
 
 		$list = '('.join( ',', $fields ) .')';
 
@@ -180,6 +187,16 @@ class BD_Xprofile_Member_Type_Field_Helper {
 
 		$data_fields = $wpdb->get_results( $query );
 
+		//No value was set earlie for this field, we need to add one?
+		if ( empty( $data_fields ) ) {
+
+			foreach( $fields as $field_id ) {
+				xprofile_set_field_data( $field_id, $user_id, $member_type );
+			}
+			return ;
+		}
+
+		//It will only run
 		foreach ( $data_fields as $row ) {
 			if ( $row->value == $member_type ) {
 				continue;
@@ -191,6 +208,11 @@ class BD_Xprofile_Member_Type_Field_Helper {
 
 	}
 
+	/**
+	 * Get the Xprofile field ids having member type as their type.
+	 *
+	 * @return array
+	 */
 	public function get_membertype_fields() {
 		global $wpdb;
 		$table =  buddypress()->profile->table_name_fields;
