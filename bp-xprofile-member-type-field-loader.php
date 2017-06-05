@@ -22,7 +22,13 @@ class BD_Xprofile_Member_Type_Field_Helper {
      * @var string 
      */
     private $path = '';
-    
+
+	/**
+	 * Track whether we are currently updating, It helps us avoid recursion.
+	 * 
+	 * @var boolean
+	 */
+	private $updating;
     /**
      * The url to this plugin directory
      * @var string url 
@@ -96,7 +102,7 @@ class BD_Xprofile_Member_Type_Field_Helper {
 	/**
 	 * Mark the field as shown
 	 * 
-	 * @param type $field_id
+	 * @param int $field_id
 	 */
 	public function set_shown( $field_id ) {
 		
@@ -106,12 +112,13 @@ class BD_Xprofile_Member_Type_Field_Helper {
 	 * Check if the given field was shown
 	 * 
 	 * @param int $field_id
+	 *
 	 * @return boolean
 	 */
 	public function was_shown( $field_id ) {
-		
 		return isset( $this->shown_fields['field_' . $field_id ] );
 	}
+
 	// a work around for the themes that does not support newer hook.
 	public function may_be_show_field( ) {
 		
@@ -129,12 +136,13 @@ class BD_Xprofile_Member_Type_Field_Helper {
 	/**
 	 * Update the member type of a user when member type field is updated
 	 * 
-	 * @param type $data_field
+	 * @param Object $data_field
 	 * @return type
 	 */
 	public function update_member_type( $data_field ) {
 	
 		$field = xprofile_get_field( $data_field->field_id ) ;
+
 
 		//we only need to worry about member type field
 
@@ -142,18 +150,27 @@ class BD_Xprofile_Member_Type_Field_Helper {
 			return ;
 		}
 
+
+		if ( $this->updating ) {
+			return;
+		}
+
+		$this->updating = true;
+
 		$user_id = $data_field->user_id;
 		$member_type = maybe_unserialize( $data_field->value );
 		
 		//validate too?
 		if ( empty( $member_type ) ) {
-			
-			//remove all member type?
+
+			// remove all member type?
 			bp_set_member_type( $user_id, '' );
 			return ;
 		}
-		//should we validate member type here? I don't think as only validated data will be passed here
-		bp_set_member_type( $user_id, $member_type );
+		// Is this members type registered and active?, Then update.
+		if ( bp_get_member_type_object( $member_type ) ) {
+			bp_set_member_type( $user_id, $member_type );
+		}
 	}
 
 	/**
@@ -170,6 +187,12 @@ class BD_Xprofile_Member_Type_Field_Helper {
 		if ( did_action( 'delete_user') || did_action( 'wpmu_delete_user' ) ) {
 			return ;
 		}
+
+		if ( $this->updating ) {
+			return;
+		}
+
+		$this->updating = true;
 
 
 		$fields = $this->get_membertype_fields();
@@ -198,7 +221,7 @@ class BD_Xprofile_Member_Type_Field_Helper {
 
 		//It will only run
 		foreach ( $data_fields as $row ) {
-			if ( $row->value == $member_type ) {
+			if ( $row->value && $row->value == $member_type ) {
 				continue;
 				//no need to update
 			}

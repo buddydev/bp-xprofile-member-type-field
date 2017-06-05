@@ -86,7 +86,6 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 			$this->_edit_options_html( $option_values, $options );
 		}
 
-				
 	}
 
 	public function admin_field_html( array $raw_properties = array() ) {
@@ -146,7 +145,7 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 			$member_types[$type_name] = $member_type_object->labels['singular_name'];
 		}
 		
-		return $member_types;
+		return apply_filters( 'bp_xprofile_member_type_field_allowed_types', $member_types, $registered_member_types );
 	}
 
 	/**
