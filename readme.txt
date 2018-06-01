@@ -3,7 +3,7 @@ Contributors: buddydev, sbrajesh
 Tags: buddypress
 Requires at least: 2.5+
 Tested up to: 2.9.0
-Stable tag: 1.0.3
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,9 @@ For more details, Please see the plugin documentation page.
 3. Edit profile page screenshot-3.png
 
 == Changelog ==
+
+= 1.0.6 =
+* Added compatibility with BP Profile search 4.8+
 
 = 1.0.5 =
 * Fixed recursion on selecting empty field.
