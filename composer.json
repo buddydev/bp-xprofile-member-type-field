@@ -1,0 +1,11 @@
+{
+    "name": "buddydev/bp-xprofile-member-type-field",
+    "description": "BuddyPress Xprofile Member Type Field",
+    "type": "wordpress-plugin",
+    "keywords": ["wordpress", "plugin", "buddypress"],
+    "homepage": "https://buddydev.com/plugins/bp-xprofile-member-type-field/",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "composer/installers": "v1.5.0"
+    }
+}
