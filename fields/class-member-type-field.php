@@ -1,20 +1,28 @@
 <?php
 /**
  * Implementing member type as select field
- * 
+ */
+
+// Do not allow direct access over web.
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Member Type Field class.
  */
 class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
-	
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
-		
+
 		parent::__construct();
 
 		$this->category = _x( 'Single Fields', 'xprofile field type category', 'bp-xprofile-member-type-field' );
 		$this->name     = _x( 'Single Member Type', 'xprofile field type', 'bp-xprofile-member-type-field' );
 
 		$this->set_format( '', 'replace' );
-		
+
 		$this->supports_multiple_defaults = false;
 		$this->accepts_null_value         = true;
 		$this->supports_options           = false;
@@ -24,25 +32,31 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 
 	/**
 	 * Is it a valid member type?
-	 * 
-	 * @param type $val
+	 *
+	 * @param string $val value.
+	 *
 	 * @return boolean
 	 */
 	public function is_valid( $val ) {
-		
-		//if a registered member type,
-		if ( empty( $val) || bp_get_member_type_object( $val ) ) {
+
+		// if a registered member type.
+		if ( empty( $val ) || bp_get_member_type_object( $val ) ) {
 			return true;
 		}
-		
+
 		return false;
-		
+
 	}
 
+	/**
+	 * Edit field html.
+	 *
+	 * @param array $raw_properties props.
+	 */
 	public function edit_field_html( array $raw_properties = array() ) {
-		
+
 		$this->_edit_field_html( $raw_properties );
-		
+
 		bp_xprofile_member_type_field_helper()->set_shown( bp_get_the_profile_field_id() );
 	}
 
@@ -58,24 +72,19 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 	 * Must be used inside the {@link bp_profile_fields()} template loop.
 	 *
 	 * @param array $args Optional. The arguments passed to {@link bp_the_profile_field_options()}.
-	 * 
 	 */
 	public function edit_field_options_html( array $args = array() ) {
-		
+
 		$original_option_values = maybe_unserialize( BP_XProfile_ProfileData::get_value_byid( $this->field_obj->id, $args['user_id'] ) );
 
-		if ( ! empty( $_POST['field_' . $this->field_obj->id] ) ) {
-			
-			$option_values =  (array) $_POST['field_' . $this->field_obj->id] ;
+		if ( ! empty( $_POST[ 'field_' . $this->field_obj->id ] ) ) {
+			$option_values = (array) $_POST[ 'field_' . $this->field_obj->id ];
 			$option_values = array_map( 'sanitize_text_field', $option_values );
-			
 		} else {
-			
-			$option_values = (array)$original_option_values;
-			
+			$option_values = (array) $original_option_values;
+
 		}
-		 //member types list as array
-                
+		// member types list as array.
 		$options = self::get_member_types();
 
 		//$option_values = (array) $original_option_values;	
@@ -88,78 +97,92 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 
 	}
 
+	/**
+	 * Admin edit field.
+	 *
+	 * @param array $raw_properties props.
+	 */
 	public function admin_field_html( array $raw_properties = array() ) {
-		
 		$this->edit_field_html();
+	}
+
+	/**
+	 * New field.
+	 *
+	 * @param BP_XProfile_Field $current_field field object.
+	 * @param string            $control_type control type.
+	 */
+	public function admin_new_field_html( BP_XProfile_Field $current_field, $control_type = '' ) {
 
 	}
-	
-	public function admin_new_field_html( BP_XProfile_Field $current_field, $control_type = '' ) {
-		
-	}
-	
+
 	/**
 	 * Format member type value for  display.
 	 *
-	 * @param string $field_value The member type name(key) value, as saved in the database.
+	 * @param string     $field_value The member type name(key) value, as saved in the database.
+	 * @param string|int $field_id    ID of the field.
+	 *
 	 * @return string the member type label
 	 */
 	public static function display_filter( $field_value, $field_id = '' ) {
-		
+
 		if ( empty( $field_value ) ) {
 			return $field_value;
 		}
-		
+
 		$member_types = self::get_member_types();
-		
+
 		if ( isset( $member_types[ $field_value ] ) ) {
 			return $member_types[ $field_value ];
 		}
-		
+
 		return '';
-		
+
 	}
-	
+
 	/**
 	 * Get member types as associative array
-	 * 
+	 *
 	 * @staticvar array $member_types
 	 * @return array
 	 */
 	private static function get_member_types() {
-		
+
 		static $member_types = null;
-		
+
 		if ( isset( $member_types ) ) {
 			return $member_types;
 		}
-		
+
 		$registered_member_types = bp_get_member_types( null, 'object' );
-		
+
 		if ( empty( $registered_member_types ) ) {
 			$member_types = $registered_member_types;
+
 			return $member_types;
 		}
-		
+
 		foreach ( $registered_member_types as $type_name => $member_type_object ) {
-			$member_types[$type_name] = $member_type_object->labels['singular_name'];
+			$member_types[ $type_name ] = $member_type_object->labels['singular_name'];
 		}
-		
+
 		return apply_filters( 'bp_xprofile_member_type_field_allowed_types', $member_types, $registered_member_types );
 	}
 
 	/**
 	 * Show as radio or not?
-	 * @return boolean
+	 *
+	 * @return bool
 	 */
 	public function display_as_radio() {
 		return apply_filters( 'bd_xprofile_field_type_membertype_as_radio', false, $this );
 	}
-	//Helpers
 
+	// Helpers.
 	/**
 	 * Display as select box
-	 * @param array $raw_properties
+	 *
+	 * @param array $raw_properties props.
 	 */
 	public function _edit_field_html( array $raw_properties = array() ) {
 
@@ -181,7 +204,13 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 
 	}
 
-	protected function _element_html($raw_properties = array() , $user_id = null) {
+	/**
+	 * Options html.
+	 *
+	 * @param array $raw_properties props.
+	 * @param int   $user_id User id.
+	 */
+	protected function _element_html( $raw_properties = array(), $user_id = null ) {
 		?>
         <legend id="<?php bp_the_profile_field_input_name(); ?>-1">
 			<?php bp_the_profile_field_name(); ?>
@@ -191,40 +220,50 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 		<?php
 
 		/** This action is documented in bp-xprofile/bp-xprofile-classes */
-		do_action( bp_get_the_profile_field_errors_action() );?>
+		do_action( bp_get_the_profile_field_errors_action() ); ?>
 
-		<select <?php echo $this->get_edit_field_html_elements( $raw_properties ); ?>>
+        <select <?php echo $this->get_edit_field_html_elements( $raw_properties ); ?>>
 			<?php bp_the_profile_field_options( array( 'user_id' => $user_id ) ); ?>
-		</select>
+        </select>
 
 		<?php if ( bp_get_the_profile_field_description() ) : ?>
-            <p class="description" id="<?php bp_the_profile_field_input_name(); ?>-3"><?php bp_the_profile_field_description(); ?></p>
+            <p class="description"
+               id="<?php bp_the_profile_field_input_name(); ?>-3"><?php bp_the_profile_field_description(); ?></p>
 		<?php endif; ?>
 		<?php
 	}
-	protected function _element_html_radio($raw_properties = array() , $user_id = null) {
+
+	/**
+	 * Radio boxes.
+	 *
+	 * @param array $raw_properties props.
+	 * @param int   $user_id User id.
+	 */
+	protected function _element_html_radio( $raw_properties = array(), $user_id = null ) {
 		?>
-        <legend>
+		<legend>
 			<?php bp_the_profile_field_name(); ?>
 			<?php bp_the_profile_field_required_label(); ?>
-        </legend>
+		</legend>
 
-        <?php if ( bp_get_the_profile_field_description() ) : ?>
-            <p class="description" tabindex="0"><?php bp_the_profile_field_description(); ?></p>
+		<?php if ( bp_get_the_profile_field_description() ) : ?>
+			<p class="description" tabindex="0"><?php bp_the_profile_field_description(); ?></p>
 		<?php endif; ?>
 
 		<?php
 
 		/** This action is documented in bp-xprofile/bp-xprofile-classes */
-		do_action( bp_get_the_profile_field_errors_action() ); ?>
+		do_action( bp_get_the_profile_field_errors_action() );
+		?>
 
-        <div class="input-options radio-button-options">
+		<div class="input-options radio-button-options">
 
 			<?php bp_the_profile_field_options( array( 'user_id' => $user_id ) );
 
 			if ( ! bp_get_the_profile_field_is_required() ) : ?>
 
-				<a class="clear-value" href="javascript:clear( '<?php echo esc_js( bp_get_the_profile_field_input_name() ); ?>' );">
+				<a class="clear-value"
+				   href="javascript:clear( '<?php echo esc_js( bp_get_the_profile_field_input_name() ); ?>' );">
 					<?php esc_html_e( 'Clear', 'buddypress' ); ?>
 				</a>
 
@@ -232,13 +271,17 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 
 		</div>
 		<?php if ( bp_get_the_profile_field_description() ) : ?>
-            <p class="description" id="<?php bp_the_profile_field_input_name(); ?>-3"><?php bp_the_profile_field_description(); ?></p>
+			<p class="description"
+			   id="<?php bp_the_profile_field_input_name(); ?>-3"><?php bp_the_profile_field_description(); ?></p>
 		<?php endif; ?>
 		<?php
 	}
+
 	/**
-	 * @param $option_values
-	 * @param $options
+	 * Edit Options.
+	 *
+	 * @param array $option_values values.
+	 * @param array $options options.
 	 */
 	protected function _edit_options_html( $option_values, $options ) {
 		$selected = '';
@@ -254,10 +297,10 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 		foreach ( $options as $member_type => $label ) {
 
 			$selected = '';
-			// Run the allowed option name through the before_save filter, so we'll be sure to get a match
+			// Run the allowed option name through the before_save filter, so we'll be sure to get a match.
 			$allowed_options = xprofile_sanitize_data_value_before_save( $member_type, false, false );
 
-			// First, check to see whether the user-entered value matches
+			// First, check to see whether the user-entered value matches.
 			if ( in_array( $allowed_options, (array) $option_values ) ) {
 				$selected = ' selected="selected"';
 			}
@@ -266,15 +309,22 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 
 		}
 	}
+
+	/**
+	 * Edit Options radio.
+	 *
+	 * @param array $option_values values.
+	 * @param array $options options.
+	 */
 	protected function _edit_options_html_radio( $option_values, $options ) {
 
 
 		foreach ( $options as $member_type => $label ) {
 
 			$selected = '';
-			// Run the allowed option name through the before_save filter, so we'll be sure to get a match
+			// Run the allowed option name through the before_save filter, so we'll be sure to get a match.
 			$allowed_options = xprofile_sanitize_data_value_before_save( $member_type, false, false );
-			// First, check to see whether the user-entered value matches
+			// First, check to see whether the user-entered value matches.
 			if ( in_array( $allowed_options, (array) $option_values ) ) {
 				$selected = ' checked="checked"';
 			}

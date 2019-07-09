@@ -55,7 +55,7 @@ if ( ! class_exists( 'BD_Xprofile_Member_Type_Field_Search_Helper' ) ) :
 		/**
 		 * Register field for Search form.
 		 *
-		 * @param $field
+		 * @param stdClass $field field object.
 		 */
 		public function register_field( $field ) {
 
@@ -100,7 +100,7 @@ if ( ! class_exists( 'BD_Xprofile_Member_Type_Field_Search_Helper' ) ) :
 				$args['member_type'] = $value;
 			}
 
-			// in all other cases
+			// in all other cases.
 			add_filter( 'bp_wp_user_query_args', array( $this, 'limit_to_ids' ) );
 			$user_query = new BP_User_Query( $args );
 			remove_filter( 'bp_wp_user_query_args', array( $this, 'limit_to_ids' ) );
