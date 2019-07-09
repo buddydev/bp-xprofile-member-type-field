@@ -183,10 +183,10 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 
 	protected function _element_html($raw_properties = array() , $user_id = null) {
 		?>
-		<label for="<?php bp_the_profile_field_input_name(); ?>">
+        <legend id="<?php bp_the_profile_field_input_name(); ?>-1">
 			<?php bp_the_profile_field_name(); ?>
 			<?php bp_the_profile_field_required_label(); ?>
-		</label>
+        </legend>
 
 		<?php
 
@@ -196,22 +196,29 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 		<select <?php echo $this->get_edit_field_html_elements( $raw_properties ); ?>>
 			<?php bp_the_profile_field_options( array( 'user_id' => $user_id ) ); ?>
 		</select>
+
+		<?php if ( bp_get_the_profile_field_description() ) : ?>
+            <p class="description" id="<?php bp_the_profile_field_input_name(); ?>-3"><?php bp_the_profile_field_description(); ?></p>
+		<?php endif; ?>
 		<?php
 	}
 	protected function _element_html_radio($raw_properties = array() , $user_id = null) {
 		?>
+        <legend>
+			<?php bp_the_profile_field_name(); ?>
+			<?php bp_the_profile_field_required_label(); ?>
+        </legend>
 
-		<div class="radio">
+        <?php if ( bp_get_the_profile_field_description() ) : ?>
+            <p class="description" tabindex="0"><?php bp_the_profile_field_description(); ?></p>
+		<?php endif; ?>
 
-			<label for="<?php bp_the_profile_field_input_name(); ?>">
-				<?php bp_the_profile_field_name(); ?>
-				<?php bp_the_profile_field_required_label(); ?>
-			</label>
+		<?php
 
-			<?php
+		/** This action is documented in bp-xprofile/bp-xprofile-classes */
+		do_action( bp_get_the_profile_field_errors_action() ); ?>
 
-			/** This action is documented in bp-xprofile/bp-xprofile-classes */
-			do_action( bp_get_the_profile_field_errors_action() ); ?>
+        <div class="input-options radio-button-options">
 
 			<?php bp_the_profile_field_options( array( 'user_id' => $user_id ) );
 
@@ -224,6 +231,9 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 			<?php endif; ?>
 
 		</div>
+		<?php if ( bp_get_the_profile_field_description() ) : ?>
+            <p class="description" id="<?php bp_the_profile_field_input_name(); ?>-3"><?php bp_the_profile_field_description(); ?></p>
+		<?php endif; ?>
 		<?php
 	}
 	/**
