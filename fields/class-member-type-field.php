@@ -77,13 +77,20 @@ class BD_XProfile_Field_Type_MemberType extends BP_XProfile_Field_Type {
 
 		$original_option_values = maybe_unserialize( BP_XProfile_ProfileData::get_value_byid( $this->field_obj->id, $args['user_id'] ) );
 
+		$default = apply_filters( 'bp_xprofile_member_type_field_default_type', '' );
+
 		if ( ! empty( $_POST[ 'field_' . $this->field_obj->id ] ) ) {
 			$option_values = (array) $_POST[ 'field_' . $this->field_obj->id ];
 			$option_values = array_map( 'sanitize_text_field', $option_values );
 		} else {
-			$option_values = (array) $original_option_values;
 
+			if ( $original_option_values === '' && $default ) {
+				$option_values = (array) $default;
+			} else {
+				$option_values = (array) $original_option_values;
+			}
 		}
+
 		// member types list as array.
 		$options = self::get_member_types();
 
