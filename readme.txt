@@ -41,7 +41,11 @@ For more details, Please see the plugin documentation page.
 3. Edit profile page screenshot-3.png
 
 == Changelog ==
-= 1.0.6 =
+= 1.0.8 =
+* Add filter to allow selecting default member types on registration.
+
+== Changelog ==
+= 1.0.7 =
 * Fix field description. Also, use the new field html as used by core fields.
 
 = 1.0.6 =
